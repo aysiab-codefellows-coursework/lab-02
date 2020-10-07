@@ -40,7 +40,7 @@ HornedCritter.readJSON = () => {
         dataType: 'json'
     }
 
-    $.ajax('../data/page-1.json', ajaxSettings)
+    $.ajax('/data/page-1.json', ajaxSettings)
         .then(data => {
             data.forEach( item => {
                 let critter = new HornedCritter(item);
