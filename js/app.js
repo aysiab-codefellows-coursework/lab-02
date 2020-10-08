@@ -1,37 +1,23 @@
 'use strict';
 
+let tempID = '#gallery-template'
+let pageLoad = 'data/page-1.json'
+let divClass = '#gallery-1'
+const filters = ['View-All'];
+
 function HornedCritter(critter) {
     this.image = critter.image_url;
     this.title = critter.title;
     this.desc = critter.description
     this.tag = critter.keyword;
     this.horns = critter.horns;
-    this.class = this.class;
 }
 
 HornedCritter.prototype.render = function() {
-    let $galleryClone = $('.gallery-temp').clone();
-    $('main').append($galleryClone);
-
-    $galleryClone.find('h2').text(this.title);
-    $galleryClone.find('img').attr('src', this.image);
-    $galleryClone.find('p').text(this.desc);
-    $galleryClone.removeClass('gallery-temp');
-    $galleryClone.attr('class', this.class);
+    let template = $(tempID).html();
+    let html = Mustache.render(template, this);
+    return html;
 }
-
-HornedCritter.prototype.makeClass = function() {
-    let newTitle = "";
-    let spliceTitle = this.title.replace("'",'');
-    spliceTitle = spliceTitle.replace("#",'');
-    spliceTitle = spliceTitle.split(' ');
-    spliceTitle.forEach(function(value) {
-        newTitle = newTitle + value;
-        console.log(newTitle)
-   })
-   this.class = newTitle;
-}
-
 
 
 HornedCritter.readJSON = () => {
@@ -40,24 +26,67 @@ HornedCritter.readJSON = () => {
         dataType: 'json'
     }
 
-    $.ajax('data/page-1.json', ajaxSettings)
+    $.ajax(pageLoad, ajaxSettings)
         .then(data => {
+            let sorted = [];
             data.forEach( item => {
                 let critter = new HornedCritter(item);
-                critter.makeClass();
-                critter.render();
-                $('select').append(`<option value=${critter.class}>${critter.title}</option>`);
+                if(!filters.includes(critter.tag)) {
+                    filters.push(critter.tag);
+                }
+                console.log(filters);
+                sorted.push(critter);
+            })
+            sorted.sort((a, b) => a.horns - b.horns);
+            sorted.forEach((value) => {
+                $(divClass).append(value.render());
             })
         })
+       .then(data => {
+            appendOptions();
+       }) 
+}
+
+
+function appendOptions() {
+    console.log(filters);
+    filters.forEach(function(value) {
+        $('select').append(`<option value="${value}">${value}</option>`);
+        console.log($('select'));
+    })
 }
 
 $('select').on('change', function() {
-    if($('select option:selected').text() === 'View All') {
+    $('#gallery-1').show();
+    $('gallery-2').show();
+    if($('select option:selected').text() === 'View-All') {
         $('section').show();
     } else {
         $('section').hide();
         $(`.${$('select option:selected').val()}`).show();
     }
   })
+
+
+$('#second').on('click', function() {
+    $(divClass).hide();
+    divClass = '#gallery-2'
+    if($(divClass).children().length) {
+        $(divClass).show();
+    } else {
+        $('select').empty();
+        pageLoad = 'data/page-2.json';
+        HornedCritter.readJSON();
+    }
+})
+
+$('#first').on('click', function() {
+    $(divClass).hide();
+    divClass = '#gallery-1';
+    $(divClass).show();
+})
+
+
+
 
 $(() => HornedCritter.readJSON());
