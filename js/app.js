@@ -28,13 +28,18 @@ HornedCritter.readJSON = () => {
 
     $.ajax(pageLoad, ajaxSettings)
         .then(data => {
+            let sorted = [];
             data.forEach( item => {
                 let critter = new HornedCritter(item);
                 if(!filters.includes(critter.tag)) {
                     filters.push(critter.tag);
                 }
                 console.log(filters);
-                $(divClass).append(critter.render());
+                sorted.push(critter);
+            })
+            sorted.sort((a, b) => a.horns - b.horns);
+            sorted.forEach((value) => {
+                $(divClass).append(value.render());
             })
         })
        .then(data => {
@@ -85,4 +90,3 @@ $('#first').on('click', function() {
 
 
 $(() => HornedCritter.readJSON());
-console.log(filters);
